@@ -31,7 +31,7 @@ class OtpMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Otp Mail',
+            subject: 'OTP for Registration - ' . config('app.name'),
         );
     }
 
@@ -41,7 +41,7 @@ class OtpMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'email.otp',
         );
     }
 

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OtpMail;
 
 class AuthController extends Controller
 {
@@ -34,7 +36,9 @@ class AuthController extends Controller
         $user->phone     = $request->phone;
         $user->save();
 
-       
-        return back()->with('message',"otp send your email ,please verify ");
+        Mail::to($user->email)->send(new OtpMail($user->name, $otp));
+
+        return redirect()->route('otp.form', ['email' => $user->email])
+            ->with('message', 'OTP sent to your email. Please verify.');
     }
 }
