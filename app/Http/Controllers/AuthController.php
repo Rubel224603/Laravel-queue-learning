@@ -41,4 +41,8 @@ class AuthController extends Controller
         return redirect()->route('otp.form', ['email' => $user->email])
             ->with('message', 'OTP sent to your email. Please verify.');
     }
+    public function otpForm()
+    {
+        return view('auth.otpVerify');
+    }
 }

@@ -7,3 +7,4 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::post('user/store',[AuthController::class,'userStore']);
+Route::get('otp-form',[AuthController::class,'otpForm'])->name('otp.form');
