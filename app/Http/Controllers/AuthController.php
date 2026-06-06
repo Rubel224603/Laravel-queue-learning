@@ -45,4 +45,13 @@ class AuthController extends Controller
     {
         return view('auth.otpVerify');
     }
+
+    public function userLogin()
+    {
+        return view('auth.login');
+    }
+    public function forgetPassword()
+    {
+        return view('auth.forget');
+    }
 }
