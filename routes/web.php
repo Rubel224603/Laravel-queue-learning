@@ -9,10 +9,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/user-register',[AuthController::class,'userRegister']);
-Route::get('/user-login',[AuthController::class,'userLogin']);
+Route::get('/user-login',[AuthController::class, 'userLoginForm']);
 Route::post('user/store',[AuthController::class,'userStore']);
 Route::get('otp-form',[AuthController::class,'otpForm'])->name('otp.form');
 Route::post('otp-verification',[AuthController::class, 'otpVerification']);
+Route::get('/dashboard',[AuthController::class, 'dashboard']);
 Route::get('/forget-password',[AuthController::class,'forgetPassword']);
 
 //

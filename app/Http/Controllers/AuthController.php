@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\Session;
 class AuthController extends Controller
 {
     //
-    public function userRegister(){
-    
+    public function userRegister()
+    {
+
         return view('auth.register');
     }
 
@@ -26,7 +27,7 @@ class AuthController extends Controller
             'phone'     => 'required|string',
         ]);
 
-        $otp = rand(1, 999999);
+        $otp = rand(100000, 999999);
         //return response()->json($otp);
         $user            = new User();
         $user->name      = $request->name;
@@ -40,13 +41,14 @@ class AuthController extends Controller
 
         $user->save();
 
-        Mail::to($user->email)->send(new OtpMail($user->name, $otp));
+        //Mail::to($user->email)->send(new OtpMail($user->name, $otp));
+        Mail::to($user->email)->queue(new OtpMail($user->name, $otp)); //for background work
 
         //Session::put('verify_email', $user->email); //Need for varification 
         Session::put('verify_email', $user->email);
 
-       
-        return redirect()->route('otp.form', ['email' => $user->email])
+
+        return redirect()->route('otp.form')
             ->with('message', 'OTP sent to your email. Please verify.');
     }
 
@@ -57,46 +59,52 @@ class AuthController extends Controller
 
     public function otpVerification(Request $request)
     {
+
         $request->validate([
             'otp' => 'required|digits:6',
-            'email' => 'required|email|exists:users,email'
         ]);
 
         $email = Session::get('verify_email');
-        return $email;
 
         if (!$email) {
             return back()->with('error', 'Session expired. Please register again.');
         }
 
-        
         $user = User::where('email', $email)
             ->where('otp', $request->otp)
             ->where('otp_expires_at', '>', now())
             ->first();
 
-        if ($user) {
-          
-            $user->otp = null;
-            $user->otp_expires_at = null;
-            $user->email_verified_at = now();
-            $user->save();
-
-            Session::forget('verify_email');
-            auth()->login($user);
-
-            return redirect()->route('dashboard')
-                ->with('message', 'Email verified successfully!');
+        if (!$user) {
+            return back()->with('error', 'Invalid or expired OTP. Please try again.')
+                ->withInput();
         }
+        $user->update([
+            'otp' => null,
+            'otp_expires_at' => null,
+            'is_verified' => now(),
+        ]);
 
-        // expire or wrong otp
-        return back()
-            ->with('error', 'Invalid or expired OTP. Please try again.')
-            ->withInput();
+        Session::forget('verify_email');
+        auth()->login($user);
+
+        return redirect('/dashboard')->with('message', 'Email verified successfully!');
     }
-    public function userLogin()
+    public function dashboard()
+    {
+        return view('auth.dashboard');
+    }
+    public function userLoginForm()
     {
         return view('auth.login');
+    }
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => "required|email:exists:users",
+            'password' => "required|max:8"
+        ]);
+
     }
     public function forgetPassword()
     {
